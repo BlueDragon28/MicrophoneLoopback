@@ -1,8 +1,17 @@
 #include <iostream>
+#include "StreamApplication.h"
+#include "LoopbackStream.h"
 
 int main()
 {
-    std::cout << "Hello World!" << std::endl;
+    StreamApplication app;
 
-    return EXIT_SUCCESS;
+    LoopbackStream stream;
+    stream.init();
+
+    app.setStream(&stream);
+
+    bool result = app.run();
+
+    return result;
 }
