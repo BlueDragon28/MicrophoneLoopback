@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.16.0)
+cmake_policy(SET CMP0091 NEW)
 project(MicrophoneLoopback LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -25,6 +26,8 @@ if(WIN32)
     else()
         target_link_libraries(MicrophoneLoopback "${CMAKE_SOURCE_DIR}/dependencies/portaudio/lib/portaudio_static.lib")
     endif()
+    set_property(TARGET MicrophoneLoopback PROPERTY
+             MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 elseif(UNIX AND NOT APPLE)
     target_link_libraries(MicrophoneLoopback ${PORTAUDIO_LIBRARIES})
 endif()
