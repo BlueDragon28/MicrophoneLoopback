@@ -3,7 +3,6 @@
 
 #include <portaudio.h>
 #include <string>
-#include <mutex>
 
 class LoopbackStream
 {

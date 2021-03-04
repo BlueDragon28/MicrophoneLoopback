@@ -1,4 +1,3 @@
-#include <iostream>
 #include "StreamApplication.h"
 #include "LoopbackStream.h"
 

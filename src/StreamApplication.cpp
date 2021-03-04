@@ -1,9 +1,10 @@
 #include "StreamApplication.h"
-#include <iostream>
 #include <portaudio.h>
 #include <thread>
 #include <chrono>
+#ifdef __linux__
 #include <csignal>
+#endif
 
 // Static pointer to the app initialized.
 static StreamApplication* app = nullptr;
@@ -25,6 +26,7 @@ StreamApplication::StreamApplication() :
 
     // Connect the signal handler to catch ctrl-c and terminate signals.
 #ifdef WIN32
+    createWindowsSignalsCatch();
 #elif __linux__
     createSigAction();
 #endif
@@ -32,8 +34,7 @@ StreamApplication::StreamApplication() :
 
 StreamApplication::~StreamApplication()
 {
-    m_stream->deinit();
-    Pa_Terminate();
+    deinit();
 }
 
 void StreamApplication::setStream(LoopbackStream* stream)
@@ -78,9 +79,33 @@ int StreamApplication::run()
 void StreamApplication::stopApplication()
 {
     m_isAppContinue = false;
+    deinit();
+}
+
+void StreamApplication::deinit()
+{
+    m_stream->deinit();
+    Pa_Terminate();
 }
 
 #ifdef WIN32
+void StreamApplication::createWindowsSignalsCatch()
+{
+    SetConsoleCtrlHandler(StreamApplication::windowsSignalsHandler, TRUE);
+}
+
+BOOL StreamApplication::windowsSignalsHandler(DWORD signal)
+{
+    if (signal == CTRL_C_EVENT 
+        || signal == CTRL_CLOSE_EVENT 
+        || signal == CTRL_LOGOFF_EVENT
+        || signal == CTRL_SHUTDOWN_EVENT
+        || signal == CTRL_BREAK_EVENT)
+    {
+        app->stopApplication();
+    }
+    return TRUE;
+}
 #elif __linux__
 void StreamApplication::createSigAction()
 {

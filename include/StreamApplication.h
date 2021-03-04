@@ -3,6 +3,10 @@
 
 #include "LoopbackStream.h"
 
+#ifdef WIN32
+#include "windows.h"
+#endif
+
 class StreamApplication
 {
     StreamApplication(const StreamApplication& other) = delete;
@@ -23,7 +27,11 @@ public:
     void stopApplication();
 
 private:
+    void deinit();
+
 #ifdef WIN32
+    void createWindowsSignalsCatch();
+    static BOOL WINAPI windowsSignalsHandler(DWORD signal);
 #elif __linux__
     // Linux handler for catch ctrl-c and term signal.
     void createSigAction();

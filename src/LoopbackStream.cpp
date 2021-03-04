@@ -1,7 +1,5 @@
 #include "LoopbackStream.h"
-#include <iostream>
 #include <cstring>
-#include <thread>
 
 LoopbackStream::LoopbackStream() :
     m_channelsCount(1),
