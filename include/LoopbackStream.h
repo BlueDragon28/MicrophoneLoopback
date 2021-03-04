@@ -7,7 +7,7 @@
 
 class LoopbackStream
 {
-    // Disabling copy constructor
+    // Disabling the copy constructor
     LoopbackStream(const LoopbackStream&) = delete;
 public:
     LoopbackStream();
@@ -35,20 +35,10 @@ private:
         PaStreamCallbackFlags statusFlags,
         void *userData
     );
-    static int staticOutputCallback(
-        const void *inputBuffer,
-        void *outputBuffer,
-        unsigned long framesPerBuffer,
-        const PaStreamCallbackTimeInfo* timeInfo,
-        PaStreamCallbackFlags statusFlags,
-        void *userData
-    );
 
     // Callbacks
     int inputCallback(
-        const void *inputBuffer
-    );
-    int outputCallback(
+        const void *inputBuffer,
         void* outputBuffer
     );
 
@@ -59,18 +49,14 @@ private:
     int m_channelsCount, m_sampleRate, m_sizePerSample;
     unsigned long m_streamFramePerBuffer;
 
-    // Initialisation variables.
+    // Stream.
     bool m_isStreamReady;
-    PaStream *m_inputStream,
-             *m_outputStream;
+    PaStream *m_stream;
 
     // Playing variables.
     bool m_isPlayingContinue;
 
-    // Buffer data
-    bool m_inputIsBuffer1, m_ouputIsBuffer1;
-    char *m_inputBuffer1, *m_inputBuffer2;
-    std::mutex m_inputBuffer1Locker, m_inputBuffer2Locker;
+    // Buffer size
     size_t m_inputBufferSize;
 };
 
