@@ -40,6 +40,32 @@ bool LoopbackStream::init()
     int err = paNoError;
 
     // Creating the input stream with the default input device.
+#ifdef WIN32
+    PaStreamParameters inputStreamParams = {};
+    inputStreamParams.device = Pa_GetDefaultInputDevice();
+    inputStreamParams.channelCount = m_channelsCount;
+    inputStreamParams.sampleFormat = paInt16;
+    inputStreamParams.suggestedLatency = 0.02;
+    inputStreamParams.hostApiSpecificStreamInfo = nullptr;
+
+    PaStreamParameters outputStreamParams = {};
+    outputStreamParams.device = Pa_GetDefaultOutputDevice();
+    outputStreamParams.channelCount = m_channelsCount;
+    outputStreamParams.sampleFormat = paInt16;
+    outputStreamParams.suggestedLatency = 0.02;
+    outputStreamParams.hostApiSpecificStreamInfo = nullptr;
+
+    err = Pa_OpenStream(
+        &m_stream,
+        &inputStreamParams,
+        &outputStreamParams,
+        m_sampleRate,
+        m_streamFramePerBuffer,
+        paClipOff,
+        LoopbackStream::staticInputCallback,
+        static_cast<void*>(this));
+
+#elif __linux__
     err = Pa_OpenDefaultStream(
         &m_stream,
         m_channelsCount,
@@ -49,6 +75,7 @@ bool LoopbackStream::init()
         m_streamFramePerBuffer,
         LoopbackStream::staticInputCallback,
         static_cast<void*>(this));
+#endif
 
     if (err != paNoError)
     {
