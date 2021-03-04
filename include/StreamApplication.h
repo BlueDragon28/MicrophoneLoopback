@@ -23,7 +23,12 @@ public:
     void stopApplication();
 
 private:
-    static void signalHandler(int signal);
+#ifdef WIN32
+#elif __linux__
+    // Linux handler for catch ctrl-c and term signal.
+    void createSigAction();
+    static void sigActionHandler(int signal);
+#endif
 
     LoopbackStream* m_stream;
     bool m_isAppContinue;

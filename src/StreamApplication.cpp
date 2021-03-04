@@ -23,13 +23,11 @@ StreamApplication::StreamApplication() :
     else
         m_isAppReady = false;
 
-    // Connect the signal handler to catch ctrl-c signals.
-    struct sigaction sigHandler = {};
-    sigHandler.sa_handler = StreamApplication::signalHandler;
-    sigemptyset(&sigHandler.sa_mask);
-    sigHandler.sa_flags = 0;
-    sigaction(SIGINT, &sigHandler, NULL);
-    sigaction(SIGTERM, &sigHandler, NULL);
+    // Connect the signal handler to catch ctrl-c and terminate signals.
+#ifdef WIN32
+#elif __linux__
+    createSigAction();
+#endif
 }
 
 StreamApplication::~StreamApplication()
@@ -82,8 +80,22 @@ void StreamApplication::stopApplication()
     m_isAppContinue = false;
 }
 
-void StreamApplication::signalHandler(int signal)
+#ifdef WIN32
+#elif __linux__
+void StreamApplication::createSigAction()
 {
+    // Connect the signal handler to catch ctrl-c signals.
+    struct sigaction sigHandler = {};
+    sigHandler.sa_handler = StreamApplication::sigActionHandler;
+    sigemptyset(&sigHandler.sa_mask);
+    sigHandler.sa_flags = 0;
+    sigaction(SIGINT, &sigHandler, NULL);
+    sigaction(SIGTERM, &sigHandler, NULL);
+}
+
+void StreamApplication::sigActionHandler(int signal)
+{
+    // If the signal ctrl-c or terminate is catch, stopping the application.
     if (signal == SIGINT || signal == SIGTERM)
     {
         if (app)
@@ -92,3 +104,4 @@ void StreamApplication::signalHandler(int signal)
         }
     }
 }
+#endif
