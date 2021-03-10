@@ -56,7 +56,7 @@ bool LoopbackStream::init()
     outputStreamParams.channelCount = m_channelsCount;
     outputStreamParams.sampleFormat = paInt16;
 #ifdef WIN32
-    outputStreamParams.suggestedLatency = 0.2
+    outputStreamParams.suggestedLatency = 0.2;
 #elif __linux__
     outputStreamParams.suggestedLatency = Pa_GetDeviceInfo(outputStreamParams.device)->defaultHighOutputLatency;
 #endif
