@@ -44,14 +44,22 @@ bool LoopbackStream::init()
     inputStreamParams.device = Pa_GetDefaultInputDevice();
     inputStreamParams.channelCount = m_channelsCount;
     inputStreamParams.sampleFormat = paInt16;
-    inputStreamParams.suggestedLatency = 0.;
+#ifdef WIN32
+    inputStreamParams.suggestedLatency = 0.2;
+#elif __linux__
+    inputStreamParams.suggestedLatency = Pa_GetDeviceInfo(inputStreamParams.device)->defaultHighInputLatency;
+#endif
     inputStreamParams.hostApiSpecificStreamInfo = nullptr;
 
     PaStreamParameters outputStreamParams = {};
     outputStreamParams.device = Pa_GetDefaultOutputDevice();
     outputStreamParams.channelCount = m_channelsCount;
     outputStreamParams.sampleFormat = paInt16;
-    outputStreamParams.suggestedLatency = 0.;
+#ifdef WIN32
+    outputStreamParams.suggestedLatency = 0.2
+#elif __linux__
+    outputStreamParams.suggestedLatency = Pa_GetDeviceInfo(outputStreamParams.device)->defaultHighOutputLatency;
+#endif
     outputStreamParams.hostApiSpecificStreamInfo = nullptr;
 
     err = Pa_OpenStream(
