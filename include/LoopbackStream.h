@@ -3,6 +3,9 @@
 
 #ifdef WIN32
 #include <portaudio.h>
+#elif __linux__
+#include <pulse/simple.h>
+#include <thread>
 #endif
 #include <string>
 
@@ -43,6 +46,10 @@ private:
         const void *inputBuffer,
         void* outputBuffer
     );
+
+#elif __linux__
+    void streamLoop();
+    void readingStream(int* index);
 #endif
 
 private:
@@ -56,6 +63,10 @@ private:
     bool m_isStreamReady;
 #ifdef WIN32
     PaStream *m_stream;
+#elif __linux__
+    pa_simple* m_inputStream;
+    pa_simple* m_outputStream;
+    std::thread m_tStream;
 #endif
 
     // Playing variables.
@@ -63,6 +74,12 @@ private:
 
     // Buffer size
     size_t m_inputBufferSize;
+
+    // Buffer data
+#ifdef __linux__
+    char* m_data;
+    char* m_data2;
+#endif
 };
 
 #endif // LOOPBACKSTREAM_MLB_H

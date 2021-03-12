@@ -8,10 +8,17 @@ LoopbackStream::LoopbackStream() :
     m_streamFramePerBuffer(256),
 #ifdef WIN32
     m_stream(nullptr),
+#elif __linux__
+    m_inputStream(nullptr),
+    m_outputStream(nullptr),
 #endif
     m_isStreamReady(false),
     m_isPlayingContinue(false),
     m_inputBufferSize(m_streamFramePerBuffer * m_sizePerSample * m_channelsCount)
+#ifdef __linux__
+    ,m_data(nullptr),
+    m_data2(nullptr)
+#endif
 {}
 
 LoopbackStream::~LoopbackStream()
@@ -23,12 +30,36 @@ void LoopbackStream::deinit()
 {
     stop();
 
-    // Deinitialization of the stream.
+    // Deinitialization of the streams and datas.
 #ifdef WIN32
     if (m_stream)
     {
         Pa_CloseStream(m_stream);
         m_stream = nullptr;
+    }
+#elif __linux__
+    if (m_tStream.joinable())
+        m_tStream.join();
+
+    if (m_inputStream)
+    {
+        pa_simple_free(m_inputStream);
+        m_inputStream = nullptr;
+    }
+    if (m_outputStream)
+    {
+        pa_simple_free(m_outputStream);
+        m_outputStream = nullptr;
+    }
+    if (m_data)
+    {
+        delete[] m_data;
+        m_data = nullptr;
+    }
+    if (m_data2)
+    {
+        delete[] m_data2;
+        m_data2 = nullptr;
     }
 #endif
     
@@ -76,6 +107,69 @@ bool LoopbackStream::init()
         m_strError = "Failed to create the input stream.";
         return false;
     }
+
+#elif __linux__
+    // Stream specification.
+    pa_sample_spec sampleSpec;
+    sampleSpec.channels = m_channelsCount;
+    sampleSpec.format = PA_SAMPLE_S16LE;
+    sampleSpec.rate = m_sampleRate;
+
+    // Pulseaudio buffer length.
+    pa_buffer_attr bufferAtribute;
+    bufferAtribute.maxlength = m_inputBufferSize;
+    bufferAtribute.tlength = -1;
+    bufferAtribute.prebuf = -1;
+    bufferAtribute.minreq = -1;
+    bufferAtribute.fragsize = -1;
+
+    // Opening the input stream. (from the microphone.)
+    m_inputStream = pa_simple_new(
+        nullptr,
+        "MicrophoneLoopback",
+        PA_STREAM_RECORD,
+        nullptr,
+        "Microphone record",
+        &sampleSpec,
+        nullptr,
+        &bufferAtribute,
+        nullptr
+    );
+
+    if (!m_inputStream)
+    {
+        m_strError = "Failed to start the input stream.";
+        m_isStreamReady = false;
+        m_isPlayingContinue = false;
+        return false;
+    }
+
+    // Opening the output stream. (to the speakers.)
+    m_outputStream = pa_simple_new(
+        nullptr,
+        "MicrophoneLoopback",
+        PA_STREAM_PLAYBACK,
+        nullptr,
+        "Microphone playback",
+        &sampleSpec,
+        nullptr,
+        &bufferAtribute,
+        nullptr
+    );
+
+    if (!m_outputStream)
+    {
+        m_strError = "Failed to start the output stream.";
+        m_isStreamReady = false;
+        m_isPlayingContinue = false;
+        return false;
+    }
+
+    // Creating the two temporaring buffers.
+    m_data = new char[m_inputBufferSize];
+    memset(m_data, 0, m_inputBufferSize);
+    m_data2 = new char[m_inputBufferSize];
+    memset(m_data, 0, m_inputBufferSize);
 #endif
 
     // Everything is fine.
@@ -102,6 +196,95 @@ int LoopbackStream::inputCallback(const void* inputBuffer, void* outputBuffer)
     memcpy(outputBuffer, inputBuffer, m_inputBufferSize);
     return paContinue;
 }
+
+#elif __linux__
+/*void LoopbackStream::streamLoop()
+{
+    // Starting to play
+    int err = PA_OK;
+    while (m_isPlayingContinue)
+    {
+        // Write the data to the playback buffer.
+        err = pa_simple_write(m_outputStream, m_data, m_inputBufferSize, nullptr);
+        if (err != 0)
+        {
+            m_strError = "Failed to play data.";
+            m_isPlayingContinue = false;
+            break;
+        }
+        err = pa_simple_read(m_inputStream, m_data, m_inputBufferSize, nullptr);
+        if (err != 0)
+        {
+            m_strError = "Failed to read data from the microphone.";
+            m_isPlayingContinue = false;
+            break;
+        }
+    }
+}*/
+
+void LoopbackStream::streamLoop()
+{
+    // Starting to play
+    int err = PA_OK;
+    int inputIndex = 1;
+    int outputIndex = 0;
+    std::thread tOutput;
+
+    while (m_isPlayingContinue)
+    {
+        // Join the output thread if joinable.
+        if (tOutput.joinable())
+            tOutput.join();
+        
+        // Send sound data to the speakers into another thread.
+        tOutput = std::thread(&LoopbackStream::readingStream, this, &outputIndex);
+
+        // Reading sound data from the microphone and alternate wich buffer to use.
+        if (inputIndex == 0)
+        {
+            err = pa_simple_read(m_inputStream, m_data, m_inputBufferSize, nullptr);
+            inputIndex = 1;
+        }
+        else
+        {
+            err = pa_simple_read(m_inputStream, m_data2, m_inputBufferSize, nullptr);
+            inputIndex = 0;
+        }
+        
+        // If an error happen, leave the stream.
+        if (err != PA_OK)
+        {
+            m_strError = "Failed read data from the microphone.";
+            m_isPlayingContinue = false;
+        }
+    }
+
+    if (tOutput.joinable())
+        tOutput.join();
+}
+
+void LoopbackStream::readingStream(int* index)
+{
+    int err = PA_OK;
+    // Writing sound data from the buffers to the speakers and alternate wich buffer to use.
+    if (*index == 0)
+    {
+        err = pa_simple_write(m_outputStream, m_data, m_inputBufferSize, nullptr);
+        *index = 1;
+    }
+    else
+    {
+        err = pa_simple_write(m_outputStream, m_data2, m_inputBufferSize, nullptr);
+        *index = 0;
+    }
+    
+    // If an error happen, leave the stream.
+    if (err != PA_OK)
+    {
+        m_strError = "Failed to play sound from the microphone.";
+        m_isPlayingContinue = false;
+    }
+}
 #endif
 
 bool LoopbackStream::play()
@@ -120,6 +303,12 @@ bool LoopbackStream::play()
 #endif
 
         m_isPlayingContinue = true;
+
+#ifdef __linux__
+        // Launch the loop of the stream into another thread.
+        m_tStream = std::thread(&LoopbackStream::streamLoop, this);
+#endif
+
         return true;
     }
     else
@@ -134,7 +323,12 @@ void LoopbackStream::stop()
     // Stopping the stream.
 #ifdef WIN32
     if (m_stream)
+    {
         Pa_StopStream(m_stream);
+        m_isPlayingContinue = false
+    }
+#elif __linux
+    m_isPlayingContinue = false;
 #endif
 }
 

@@ -28,6 +28,8 @@ StreamApplication::StreamApplication() :
         m_isAppReady = false;
 #endif
 
+    m_isAppReady = true;
+
     // Connect the signal handler to catch ctrl-c and terminate signals.
 #ifdef WIN32
     createWindowsSignalsCatch();
@@ -63,12 +65,17 @@ int StreamApplication::run()
 
     if (!isAppReady()) return EXIT_FAILURE;
 
+    // Check if the stream is initialized before lauching the main loop.
+    if (!m_stream->isStreamReady())
+        m_stream->init();
     if (!m_stream->isPlayingContinue())
         m_isAppContinue = m_stream->play();
     else
         m_isAppContinue = false;
+
     if (!m_isAppContinue) return EXIT_FAILURE;
 
+    // Main loop of the program.
     while (m_isAppContinue && m_stream->isPlayingContinue())
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(2));
