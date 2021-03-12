@@ -78,7 +78,7 @@ int StreamApplication::run()
     // Main loop of the program.
     while (m_isAppContinue && m_stream->isPlayingContinue())
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(2));
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
         if (m_isAppContinue)
             m_isAppContinue = m_stream->isPlayingContinue();
