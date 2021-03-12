@@ -1,5 +1,7 @@
 #include "StreamApplication.h"
+#ifdef WIN32
 #include <portaudio.h>
+#endif
 #include <thread>
 #include <chrono>
 #ifdef __linux__
@@ -18,11 +20,13 @@ StreamApplication::StreamApplication() :
     app = this;
 
     // Initialize PortAudio.
+#ifdef WIN32
     int err = Pa_Initialize();
     if (err == paNoError)
         m_isAppReady = true;
     else
         m_isAppReady = false;
+#endif
 
     // Connect the signal handler to catch ctrl-c and terminate signals.
 #ifdef WIN32
@@ -85,7 +89,9 @@ void StreamApplication::stopApplication()
 void StreamApplication::deinit()
 {
     m_stream->deinit();
+#ifdef WIN32
     Pa_Terminate();
+#endif
 }
 
 #ifdef WIN32

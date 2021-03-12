@@ -6,7 +6,9 @@ LoopbackStream::LoopbackStream() :
     m_sampleRate(48000),
     m_sizePerSample(2),
     m_streamFramePerBuffer(256),
+#ifdef WIN32
     m_stream(nullptr),
+#endif
     m_isStreamReady(false),
     m_isPlayingContinue(false),
     m_inputBufferSize(m_streamFramePerBuffer * m_sizePerSample * m_channelsCount)
@@ -22,11 +24,13 @@ void LoopbackStream::deinit()
     stop();
 
     // Deinitialization of the stream.
+#ifdef WIN32
     if (m_stream)
     {
         Pa_CloseStream(m_stream);
         m_stream = nullptr;
     }
+#endif
     
     m_isStreamReady = false;
     m_isPlayingContinue = false;
@@ -37,6 +41,7 @@ bool LoopbackStream::init()
     // First, dinitialization of any existing stream.
     deinit();
 
+#ifdef WIN32
     int err = paNoError;
 
     // Creating the input stream with the default input device.
@@ -44,22 +49,14 @@ bool LoopbackStream::init()
     inputStreamParams.device = Pa_GetDefaultInputDevice();
     inputStreamParams.channelCount = m_channelsCount;
     inputStreamParams.sampleFormat = paInt16;
-#ifdef WIN32
     inputStreamParams.suggestedLatency = 0.2;
-#elif __linux__
-    inputStreamParams.suggestedLatency = Pa_GetDeviceInfo(inputStreamParams.device)->defaultHighInputLatency;
-#endif
     inputStreamParams.hostApiSpecificStreamInfo = nullptr;
 
     PaStreamParameters outputStreamParams = {};
     outputStreamParams.device = Pa_GetDefaultOutputDevice();
     outputStreamParams.channelCount = m_channelsCount;
     outputStreamParams.sampleFormat = paInt16;
-#ifdef WIN32
     outputStreamParams.suggestedLatency = 0.2;
-#elif __linux__
-    outputStreamParams.suggestedLatency = Pa_GetDeviceInfo(outputStreamParams.device)->defaultHighOutputLatency;
-#endif
     outputStreamParams.hostApiSpecificStreamInfo = nullptr;
 
     err = Pa_OpenStream(
@@ -79,12 +76,14 @@ bool LoopbackStream::init()
         m_strError = "Failed to create the input stream.";
         return false;
     }
+#endif
 
     // Everything is fine.
     m_isStreamReady = true;
     return true;
 }
 
+#ifdef WIN32
 int LoopbackStream::staticInputCallback(
     const void *inputBuffer,
     void *outputBuffer,
@@ -103,12 +102,14 @@ int LoopbackStream::inputCallback(const void* inputBuffer, void* outputBuffer)
     memcpy(outputBuffer, inputBuffer, m_inputBufferSize);
     return paContinue;
 }
+#endif
 
 bool LoopbackStream::play()
 {
     // Playing the stream
     if (m_isStreamReady)
     {
+#ifdef WIN32
         int err = Pa_StartStream(m_stream);
         if (err != paNoError)
         {
@@ -116,6 +117,7 @@ bool LoopbackStream::play()
             m_isPlayingContinue = false;
             return false;
         }
+#endif
 
         m_isPlayingContinue = true;
         return true;
@@ -130,8 +132,10 @@ bool LoopbackStream::play()
 void LoopbackStream::stop()
 {
     // Stopping the stream.
+#ifdef WIN32
     if (m_stream)
         Pa_StopStream(m_stream);
+#endif
 }
 
 bool LoopbackStream::isStreamReady() const

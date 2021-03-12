@@ -1,7 +1,9 @@
 #ifndef LOOPBACKSTREAM_MLB_H
 #define LOOPBACKSTREAM_MLB_H
 
+#ifdef WIN32
 #include <portaudio.h>
+#endif
 #include <string>
 
 class LoopbackStream
@@ -25,6 +27,7 @@ public:
     bool isPlayingContinue() const; // Is the stream is playing.
 
 private:
+#ifdef WIN32
     // Static callbacks used has interface to C callbacks
     static int staticInputCallback(
         const void *inputBuffer,
@@ -40,6 +43,7 @@ private:
         const void *inputBuffer,
         void* outputBuffer
     );
+#endif
 
 private:
     std::string m_strError;
@@ -50,7 +54,9 @@ private:
 
     // Stream.
     bool m_isStreamReady;
+#ifdef WIN32
     PaStream *m_stream;
+#endif
 
     // Playing variables.
     bool m_isPlayingContinue;

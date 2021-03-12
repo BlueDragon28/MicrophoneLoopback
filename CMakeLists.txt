@@ -8,19 +8,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 include_directories(include/)
 
-# This option is used to compile statically portaudio with a custom build portaudio set by the users.
-# The folder with the compiled portaudio must be place in dependencies folder and renamed to portaudio.
-if (UNIX AND NOT APPLE)
-    option(PORTAUDIO_STATIC_BUILD "Build with user portaudio package set in dependencies/portaudio folders. Otherwise, it's use package distribution." ON)
-endif()
-
 if (WIN32)
     include_directories("${CMAKE_SOURCE_DIR}/dependencies/portaudio/include")
 elseif(UNIX AND NOT APPLE)
-    if (NOT ${PORTAUDIO_STATIC_BUILD})
-        find_package(PkgConfig REQUIRED)
-        pkg_check_modules(PORTAUDIO REQUIRED portaudiocpp)
-    endif()
 endif()
 
 add_executable(MicrophoneLoopback
@@ -47,8 +37,6 @@ elseif(UNIX AND NOT APPLE)
             -lpthread)
         message("-- Compiling MicorphoneLoopback statically with user portaudio.")
     else()
-        target_link_libraries(MicrophoneLoopback ${PORTAUDIO_LIBRARIES})
-        message("-- Compiling MicrophoneLoopback with the distribution portaudio package.")
     endif()
 endif()
 set_target_properties(MicrophoneLoopback PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
