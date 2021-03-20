@@ -34,8 +34,7 @@ LoopbackStream::LoopbackStream() :
     m_isPlayingContinue(false),
     m_inputBufferSize(m_streamFramePerBuffer * m_sizePerSample * m_channelsCount)
 #ifdef __linux__
-    ,m_data(nullptr),
-    m_data2(nullptr)
+    ,m_data(nullptr)
 #endif
 {}
 
@@ -74,11 +73,6 @@ void LoopbackStream::deinit()
         delete[] m_data;
         m_data = nullptr;
     }
-    if (m_data2)
-    {
-        delete[] m_data2;
-        m_data2 = nullptr;
-    }
 #endif
     
     m_isStreamReady = false;
@@ -104,8 +98,7 @@ bool LoopbackStream::init()
     PaStreamParameters outputStreamParams = {};
     outputStreamParams.device = Pa_GetDefaultOutputDevice();
     outputStreamParams.channelCount = m_channelsCount;
-    outputStreamParams.sampleFormat = paInt16;
-    outputStreamParams.suggestedLatency = 0.2;
+    outputStreamParams.sampleFormat = paInt16;trivet 
     outputStreamParams.hostApiSpecificStreamInfo = nullptr;
 
     err = Pa_OpenStream(
@@ -186,8 +179,6 @@ bool LoopbackStream::init()
     // Creating the two temporaring buffers.
     m_data = new char[m_inputBufferSize];
     memset(m_data, 0, m_inputBufferSize);
-    m_data2 = new char[m_inputBufferSize];
-    memset(m_data, 0, m_inputBufferSize);
 #endif
 
     // Everything is fine.
@@ -216,7 +207,7 @@ int LoopbackStream::inputCallback(const void* inputBuffer, void* outputBuffer)
 }
 
 #elif __linux__
-/*void LoopbackStream::streamLoop()
+void LoopbackStream::streamLoop()
 {
     // Starting to play
     int err = PA_OK;
@@ -237,70 +228,6 @@ int LoopbackStream::inputCallback(const void* inputBuffer, void* outputBuffer)
             m_isPlayingContinue = false;
             break;
         }
-    }
-}*/
-
-void LoopbackStream::streamLoop()
-{
-    // Starting to play
-    int err = PA_OK;
-    int inputIndex = 1;
-    int outputIndex = 0;
-    std::thread tOutput;
-
-    while (m_isPlayingContinue)
-    {
-        // Join the output thread if joinable.
-        if (tOutput.joinable())
-            tOutput.join();
-        
-        // Send sound data to the speakers into another thread.
-        tOutput = std::thread(&LoopbackStream::readingStream, this, &outputIndex);
-
-        // Reading sound data from the microphone and alternate wich buffer to use.
-        if (inputIndex == 0)
-        {
-            err = pa_simple_read(m_inputStream, m_data, m_inputBufferSize, nullptr);
-            inputIndex = 1;
-        }
-        else
-        {
-            err = pa_simple_read(m_inputStream, m_data2, m_inputBufferSize, nullptr);
-            inputIndex = 0;
-        }
-        
-        // If an error happen, leave the stream.
-        if (err != PA_OK)
-        {
-            m_strError = "Failed read data from the microphone.";
-            m_isPlayingContinue = false;
-        }
-    }
-
-    if (tOutput.joinable())
-        tOutput.join();
-}
-
-void LoopbackStream::readingStream(int* index)
-{
-    int err = PA_OK;
-    // Writing sound data from the buffers to the speakers and alternate wich buffer to use.
-    if (*index == 0)
-    {
-        err = pa_simple_write(m_outputStream, m_data, m_inputBufferSize, nullptr);
-        *index = 1;
-    }
-    else
-    {
-        err = pa_simple_write(m_outputStream, m_data2, m_inputBufferSize, nullptr);
-        *index = 0;
-    }
-    
-    // If an error happen, leave the stream.
-    if (err != PA_OK)
-    {
-        m_strError = "Failed to play sound from the microphone.";
-        m_isPlayingContinue = false;
     }
 }
 #endif

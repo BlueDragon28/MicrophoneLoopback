@@ -96,7 +96,6 @@ private:
     // Buffer data
 #ifdef __linux__
     char* m_data;
-    char* m_data2;
 #endif
 };
 
