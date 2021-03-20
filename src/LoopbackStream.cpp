@@ -92,13 +92,14 @@ bool LoopbackStream::init()
     inputStreamParams.device = Pa_GetDefaultInputDevice();
     inputStreamParams.channelCount = m_channelsCount;
     inputStreamParams.sampleFormat = paInt16;
-    inputStreamParams.suggestedLatency = 0.2;
+    inputStreamParams.suggestedLatency = 0.02;
     inputStreamParams.hostApiSpecificStreamInfo = nullptr;
 
     PaStreamParameters outputStreamParams = {};
     outputStreamParams.device = Pa_GetDefaultOutputDevice();
     outputStreamParams.channelCount = m_channelsCount;
-    outputStreamParams.sampleFormat = paInt16;trivet 
+    outputStreamParams.sampleFormat = paInt16;
+    outputStreamParams.suggestedLatency = 0.02;
     outputStreamParams.hostApiSpecificStreamInfo = nullptr;
 
     err = Pa_OpenStream(
@@ -270,7 +271,7 @@ void LoopbackStream::stop()
     if (m_stream)
     {
         Pa_StopStream(m_stream);
-        m_isPlayingContinue = false
+        m_isPlayingContinue = false;
     }
 #elif __linux
     m_isPlayingContinue = false;
