@@ -16,50 +16,24 @@
  * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef STREAMAPPLICATION_MLB_H
-#define STREAMAPPLICATION_MLB_H
+#ifndef STREAMAPPLICATION_CMDParser
+#define STREAMAPPLICATION_CMDParser
 
-#include "LoopbackStream.h"
+#include <string>
+#include <cxxopts.hpp>
 
-#ifdef WIN32
-#include "windows.h"
-#endif
-
-class StreamApplication
+class CMDParser
 {
-    StreamApplication(const StreamApplication& other) = delete;
-public:
-    StreamApplication(int& argc, char**& argv);
-    ~StreamApplication();
+public: 
+    CMDParser(int& argc, char**& argv);
+    ~CMDParser();
 
-    // Setting the LoopbackStream pointer.
-    // The application will use the stream to known if it
-    // need to close.
-    void setStream(LoopbackStream* stream);
-
-    bool isAppContinue() const;
-    bool isAppReady() const;
-
-    int run();
-
-    void stopApplication();
+    bool isSampleRateSet() const;
+    int sampleRate() const;
 
 private:
-    void deinit();
-
-#ifdef WIN32
-    void createWindowsSignalsCatch();
-    static BOOL WINAPI windowsSignalsHandler(DWORD signal);
-#elif __linux__
-    // Linux handler for catch ctrl-c and term signal.
-    void createSigAction();
-    static void sigActionHandler(int signal);
-#endif
-
-    LoopbackStream* m_stream;
-    bool m_isAppContinue;
-    bool m_isAppReady;
+    bool m_isSampleRateSet;
     int m_sampleRate;
 };
 
-#endif // STREAMAPPLICATION_MLB_H
+#endif // STREAMAPPLICATION_CMDParser

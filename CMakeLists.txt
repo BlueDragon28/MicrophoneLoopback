@@ -35,8 +35,10 @@ add_executable(MicrophoneLoopback
     "src/main.cpp"
     "include/LoopbackStream.h"
     "include/StreamApplication.h"
+    "include/CMDParser.h"
     "src/LoopbackStream.cpp"
-    "src/StreamApplication.cpp")
+    "src/StreamApplication.cpp"
+    "src/CMDParser.cpp")
 if(WIN32)
     if (CMAKE_CL_64)
         target_link_libraries(MicrophoneLoopback "${CMAKE_SOURCE_DIR}/dependencies/portaudio/lib/portaudio_static_x64.lib")

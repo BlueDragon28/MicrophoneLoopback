@@ -47,6 +47,8 @@ public:
     bool isStreamReady() const; // Is the stream is ready to play.
     bool isPlayingContinue() const; // Is the stream is playing.
 
+    void setSampleRate(int sampleRate);
+
 private:
 #ifdef WIN32
     // Static callbacks used has interface to C callbacks

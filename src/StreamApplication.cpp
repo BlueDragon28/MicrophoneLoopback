@@ -17,6 +17,7 @@
 */
 
 #include "StreamApplication.h"
+#include "CMDParser.h"
 #ifdef WIN32
 #include <portaudio.h>
 #endif
@@ -29,13 +30,19 @@
 // Static pointer to the app initialized.
 static StreamApplication* app = nullptr;
 
-StreamApplication::StreamApplication() :
+StreamApplication::StreamApplication(int& argc, char**& argv) :
     m_stream(nullptr),
     m_isAppContinue(false),
-    m_isAppReady(false)
+    m_isAppReady(false),
+    m_sampleRate(-1)
 {
     // Set the app static member to this instance.
     app = this;
+
+    // Parsing command line arguments.
+    CMDParser cmdParse(argc, argv);
+    if (cmdParse.isSampleRateSet())
+        m_sampleRate = cmdParse.sampleRate();
 
     // Initialize PortAudio.
 #ifdef WIN32
@@ -64,6 +71,9 @@ StreamApplication::~StreamApplication()
 void StreamApplication::setStream(LoopbackStream* stream)
 {
     m_stream = stream;
+    if (m_sampleRate > -1)
+        m_stream->setSampleRate(m_sampleRate);
+    m_stream->init();
 }
 
 bool StreamApplication::isAppReady() const

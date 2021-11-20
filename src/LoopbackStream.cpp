@@ -287,3 +287,10 @@ bool LoopbackStream::isPlayingContinue() const
 {
     return m_isPlayingContinue;
 }
+
+void LoopbackStream::setSampleRate(int sampleRate)
+{
+    if (sampleRate < 16000)
+        return;
+    m_sampleRate = sampleRate;
+}

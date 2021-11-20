@@ -19,13 +19,11 @@
 #include "StreamApplication.h"
 #include "LoopbackStream.h"
 
-int main()
+int main(int argc, char** argv)
 {
-    StreamApplication app;
+    StreamApplication app(argc, argv);
 
     LoopbackStream stream;
-    stream.init();
-
     app.setStream(&stream);
 
     bool result = app.run();
