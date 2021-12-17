@@ -31,6 +31,7 @@ CMDParser::CMDParser(int& argc, char**& argv) :
 
     options.add_options()
         ("r,sample-rate", "Sample rate (default: 48000)\nDo not go above devices maximum supported values.", cxxopts::value<int>())
+        ("s,short", "Short version for sample rate: 44 (44100), 48 (48000), 96 (96000). Overridden by sample-rate.", cxxopts::value<int>())
         ("v,version", "Show the version of the program.")
         ("h,help", "Print usage information.");
     
@@ -49,6 +50,31 @@ CMDParser::CMDParser(int& argc, char**& argv) :
     {
         std::cout << options.help() << std::endl;
         std::exit(EXIT_SUCCESS);
+    }
+
+    // Short
+    if (result.count("short"))
+    {
+        int shortRate = result["short"].as<int>();
+        int sampleRate = 0;
+
+        if (shortRate == 44)
+            sampleRate = 44100;
+        else if (shortRate == 48)
+            sampleRate = 48000;
+        else if (shortRate == 96)
+            sampleRate = 96000;
+        
+        if (sampleRate > 0)
+        {
+            m_sampleRate = sampleRate;
+            m_isSampleRateSet = true;
+        }
+        else
+        {
+            std::cout << "Short sample rate wrong arguments. Possible value are 44, 48 and 96." << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
     }
 
     // Sample rate
