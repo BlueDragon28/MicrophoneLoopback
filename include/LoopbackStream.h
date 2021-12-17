@@ -48,6 +48,7 @@ public:
     bool isPlayingContinue() const; // Is the stream is playing.
 
     void setSampleRate(int sampleRate);
+    void setFramesPerBuffer(int framesPerBuffer);
 
 private:
 #ifdef WIN32

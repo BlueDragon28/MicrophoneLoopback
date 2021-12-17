@@ -294,3 +294,12 @@ void LoopbackStream::setSampleRate(int sampleRate)
         return;
     m_sampleRate = sampleRate;
 }
+
+void LoopbackStream::setFramesPerBuffer(int framesPerBuffer)
+{
+    // Update number of frames per buffer.
+    if (framesPerBuffer <= 0)
+        return;
+    m_streamFramePerBuffer = framesPerBuffer;
+    m_inputBufferSize = m_streamFramePerBuffer * m_sizePerSample * m_channelsCount;
+}

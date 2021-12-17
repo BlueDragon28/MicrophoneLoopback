@@ -60,6 +60,7 @@ private:
     bool m_isAppContinue;
     bool m_isAppReady;
     int m_sampleRate;
+    int m_framesPerBuffer;
 };
 
 #endif // STREAMAPPLICATION_MLB_H

@@ -30,10 +30,14 @@ public:
 
     bool isSampleRateSet() const;
     int sampleRate() const;
+    bool isFramesPerBufferSet() const;
+    int framesPerBuffer() const;
 
 private:
     bool m_isSampleRateSet;
     int m_sampleRate;
+    bool m_isframesPerBufferSet;
+    int m_framesPerBuffer;
 };
 
 #endif // STREAMAPPLICATION_CMDParser

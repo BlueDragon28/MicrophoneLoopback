@@ -20,7 +20,9 @@
 
 CMDParser::CMDParser(int& argc, char**& argv) :
     m_isSampleRateSet(false),
-    m_sampleRate(0)
+    m_sampleRate(0),
+    m_isframesPerBufferSet(false),
+    m_framesPerBuffer(0)
 {
     // Parsing command line arguments.
     if (argc <= 0 || argv == nullptr)
@@ -32,6 +34,9 @@ CMDParser::CMDParser(int& argc, char**& argv) :
     options.add_options()
         ("r,sample-rate", "Sample rate (default: 48000)\nDo not go above devices maximum supported values.", cxxopts::value<int>())
         ("s,short", "Short version for sample rate: 44 (44100), 48 (48000), 96 (96000). Overridden by sample-rate.", cxxopts::value<int>())
+        ("f,frames-per-buffer", 
+            "Number of frames per buffer (default: 256). A lower value will get a better latency but more cpu overhead and glitches.",
+            cxxopts::value<int>())
         ("v,version", "Show the version of the program.")
         ("h,help", "Print usage information.");
     
@@ -88,6 +93,18 @@ CMDParser::CMDParser(int& argc, char**& argv) :
         }
         m_isSampleRateSet = true;
     }
+
+    // Frames per buffer.
+    if (result.count("frames-per-buffer"))
+    {
+        m_framesPerBuffer = result["frames-per-buffer"].as<int>();
+        if (m_framesPerBuffer <= 0)
+        {
+            std::cout << "Frames per buffer must be higher than 0." << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+        m_isframesPerBufferSet = true;
+    }
 }
 
 CMDParser::~CMDParser()
@@ -101,4 +118,14 @@ bool CMDParser::isSampleRateSet() const
 int CMDParser::sampleRate() const
 {
     return m_sampleRate;
+}
+
+bool CMDParser::isFramesPerBufferSet() const
+{
+    return m_isframesPerBufferSet;
+}
+
+int CMDParser::framesPerBuffer() const
+{
+    return m_framesPerBuffer;
 }
