@@ -25,6 +25,8 @@ LoopbackStream::LoopbackStream() :
     m_sizePerSample(2),
     m_streamFramePerBuffer(256),
 #ifdef WIN32
+    m_inputLatency(0.02),
+    m_outputLatency(0.02),
     m_stream(nullptr),
 #elif __linux__
     m_inputStream(nullptr),
@@ -92,14 +94,14 @@ bool LoopbackStream::init()
     inputStreamParams.device = Pa_GetDefaultInputDevice();
     inputStreamParams.channelCount = m_channelsCount;
     inputStreamParams.sampleFormat = paInt16;
-    inputStreamParams.suggestedLatency = 0.02;
+    inputStreamParams.suggestedLatency = m_inputLatency;
     inputStreamParams.hostApiSpecificStreamInfo = nullptr;
 
     PaStreamParameters outputStreamParams = {};
     outputStreamParams.device = Pa_GetDefaultOutputDevice();
     outputStreamParams.channelCount = m_channelsCount;
     outputStreamParams.sampleFormat = paInt16;
-    outputStreamParams.suggestedLatency = 0.02;
+    outputStreamParams.suggestedLatency = m_outputLatency;
     outputStreamParams.hostApiSpecificStreamInfo = nullptr;
 
     err = Pa_OpenStream(
@@ -303,3 +305,17 @@ void LoopbackStream::setFramesPerBuffer(int framesPerBuffer)
     m_streamFramePerBuffer = framesPerBuffer;
     m_inputBufferSize = m_streamFramePerBuffer * m_sizePerSample * m_channelsCount;
 }
+
+#ifdef WIN32
+void LoopbackStream::setInputLatency(double inputLatency)
+{
+    if (inputLatency > 0.0)
+        m_inputLatency = inputLatency;
+}
+
+void LoopbackStream::setOutputLatency(double outputLatency)
+{
+    if (outputLatency > 0.0)
+        m_outputLatency = outputLatency;
+}
+#endif

@@ -33,11 +33,25 @@ public:
     bool isFramesPerBufferSet() const;
     int framesPerBuffer() const;
 
+#ifdef WIN32
+    bool isInputLatencySet() const;
+    double inputLatency() const;
+    bool isOutputLatencySet() const;
+    double outputLatency() const;
+#endif
+
 private:
     bool m_isSampleRateSet;
     int m_sampleRate;
     bool m_isframesPerBufferSet;
     int m_framesPerBuffer;
+
+#ifdef WIN32
+    bool m_isInputLatencySet;
+    double m_inputLatency;
+    bool m_isOutputLatencySet;
+    double m_outputLatency;
+#endif
 };
 
 #endif // STREAMAPPLICATION_CMDParser

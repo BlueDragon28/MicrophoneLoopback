@@ -36,6 +36,10 @@ StreamApplication::StreamApplication(int& argc, char**& argv) :
     m_isAppReady(false),
     m_sampleRate(-1),
     m_framesPerBuffer(-1)
+#ifdef WIN32
+    ,m_inputLatency(-1.0),
+    m_outputLatency(-1.0)
+#endif
 {
     // Set the app static member to this instance.
     app = this;
@@ -46,6 +50,12 @@ StreamApplication::StreamApplication(int& argc, char**& argv) :
         m_sampleRate = cmdParse.sampleRate();
     if (cmdParse.isFramesPerBufferSet())
         m_framesPerBuffer = cmdParse.framesPerBuffer();
+#ifdef WIN32
+    if (cmdParse.isInputLatencySet())
+        m_inputLatency = cmdParse.inputLatency();
+    if (cmdParse.isOutputLatencySet())
+        m_outputLatency = cmdParse.outputLatency();
+#endif
 
     // Initialize PortAudio.
 #ifdef WIN32
@@ -78,6 +88,12 @@ void StreamApplication::setStream(LoopbackStream* stream)
         m_stream->setSampleRate(m_sampleRate);
     if (m_framesPerBuffer > -1)
         m_stream->setFramesPerBuffer(m_framesPerBuffer);
+#ifdef WIN32
+    if (m_inputLatency > -1.0)
+        m_stream->setInputLatency(m_inputLatency);
+    if (m_outputLatency > -1.0)
+        m_stream->setOutputLatency(m_outputLatency);
+#endif
     m_stream->init();
 }
 

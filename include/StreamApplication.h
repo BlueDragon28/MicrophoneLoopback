@@ -61,6 +61,10 @@ private:
     bool m_isAppReady;
     int m_sampleRate;
     int m_framesPerBuffer;
+#ifdef WIN32
+    double m_inputLatency;
+    double m_outputLatency;
+#endif
 };
 
 #endif // STREAMAPPLICATION_MLB_H

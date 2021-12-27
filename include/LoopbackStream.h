@@ -50,6 +50,11 @@ public:
     void setSampleRate(int sampleRate);
     void setFramesPerBuffer(int framesPerBuffer);
 
+#ifdef WIN32
+    void setInputLatency(double inputLatency);
+    void setOutputLatency(double outputLatency);
+#endif
+
 private:
 #ifdef WIN32
     // Static callbacks used has interface to C callbacks
@@ -79,6 +84,10 @@ private:
     // Stream information
     int m_channelsCount, m_sampleRate, m_sizePerSample;
     unsigned long m_streamFramePerBuffer;
+#ifdef WIN32
+    double m_inputLatency;
+    double m_outputLatency;
+#endif
 
     // Stream.
     bool m_isStreamReady;

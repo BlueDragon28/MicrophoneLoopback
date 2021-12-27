@@ -23,6 +23,12 @@ CMDParser::CMDParser(int& argc, char**& argv) :
     m_sampleRate(0),
     m_isframesPerBufferSet(false),
     m_framesPerBuffer(0)
+#ifdef WIN32
+    ,m_isInputLatencySet(false),
+    m_inputLatency(-1.0),
+    m_isOutputLatencySet(false),
+    m_outputLatency(-1.0)
+#endif
 {
     // Parsing command line arguments.
     if (argc <= 0 || argv == nullptr)
@@ -37,6 +43,10 @@ CMDParser::CMDParser(int& argc, char**& argv) :
         ("f,frames-per-buffer", 
             "Number of frames per buffer (default: 256). A lower value will get a better latency but more cpu overhead and glitches.",
             cxxopts::value<int>())
+#ifdef WIN32
+        ("i,input_latency", "Latency in seconds at which Windows will try to operate to get audio from the microphone (default: 0.02).", cxxopts::value<double>())
+        ("o,output_latency", "Latency in seconds at which Windows will try to operate to send audio to the dac (default: 0.02).", cxxopts::value<double>())
+#endif
         ("v,version", "Show the version of the program.")
         ("h,help", "Print usage information.");
     
@@ -105,6 +115,32 @@ CMDParser::CMDParser(int& argc, char**& argv) :
         }
         m_isframesPerBufferSet = true;
     }
+
+#ifdef WIN32
+    // Input latency
+    if (result.count("input_latency"))
+    {
+        m_inputLatency = result["input_latency"].as<double>();
+        if (m_inputLatency <= 0.0)
+        {
+            std::cout << "Latency must be highter than 0." << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+        m_isInputLatencySet = true;
+    }
+    
+    // Output latency
+    if (result.count("output_latency"))
+    {
+        m_outputLatency = result["output_latency"].as<double>();
+        if (m_outputLatency <= 0.0)
+        {
+            std::cout << "Latency must be highter than 0." << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+        m_isOutputLatencySet = true;
+    }
+#endif
 }
 
 CMDParser::~CMDParser()
@@ -129,3 +165,25 @@ int CMDParser::framesPerBuffer() const
 {
     return m_framesPerBuffer;
 }
+
+#ifdef WIN32
+bool CMDParser::isInputLatencySet() const
+{
+    return m_isInputLatencySet;
+}
+
+double CMDParser::inputLatency() const
+{
+    return m_inputLatency;
+}
+
+bool CMDParser::isOutputLatencySet() const
+{
+    return m_isOutputLatencySet;
+}
+
+double CMDParser::outputLatency() const
+{
+    return m_outputLatency;
+}
+#endif
