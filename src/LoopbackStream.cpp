@@ -27,8 +27,10 @@ LoopbackStream::LoopbackStream() :
 #ifdef WIN32
     m_inputLatency(0.02),
     m_outputLatency(0.02),
+#endif
     m_stream(nullptr),
-#elif __linux__
+#ifdef __linux__
+    m_usePortAudio(false),
     m_inputStream(nullptr),
     m_outputStream(nullptr),
 #endif
@@ -50,13 +52,12 @@ void LoopbackStream::deinit()
     stop();
 
     // Deinitialization of the streams and datas.
-#ifdef WIN32
     if (m_stream)
     {
         Pa_CloseStream(m_stream);
         m_stream = nullptr;
     }
-#elif __linux__
+#ifdef __linux__
     if (m_tStream.joinable())
         m_tStream.join();
 
@@ -86,7 +87,11 @@ bool LoopbackStream::init()
     // First, dinitialization of any existing stream.
     deinit();
 
-#ifdef WIN32
+#ifdef __linux__
+    if (m_usePortAudio)
+    {
+#endif
+
     int err = paNoError;
 
     // Creating the input stream with the default input device.
@@ -94,14 +99,22 @@ bool LoopbackStream::init()
     inputStreamParams.device = Pa_GetDefaultInputDevice();
     inputStreamParams.channelCount = m_channelsCount;
     inputStreamParams.sampleFormat = paInt16;
+#ifdef WIN32
     inputStreamParams.suggestedLatency = m_inputLatency;
+#elif __linux__
+    inputStreamParams.suggestedLatency = 0.;
+#endif
     inputStreamParams.hostApiSpecificStreamInfo = nullptr;
 
     PaStreamParameters outputStreamParams = {};
     outputStreamParams.device = Pa_GetDefaultOutputDevice();
     outputStreamParams.channelCount = m_channelsCount;
     outputStreamParams.sampleFormat = paInt16;
+#ifdef WIN32
     outputStreamParams.suggestedLatency = m_outputLatency;
+#elif __linux__
+    outputStreamParams.suggestedLatency = 0.;
+#endif
     outputStreamParams.hostApiSpecificStreamInfo = nullptr;
 
     err = Pa_OpenStream(
@@ -122,66 +135,70 @@ bool LoopbackStream::init()
         return false;
     }
 
-#elif __linux__
-    // Stream specification.
-    pa_sample_spec sampleSpec;
-    sampleSpec.channels = m_channelsCount;
-    sampleSpec.format = PA_SAMPLE_S16LE;
-    sampleSpec.rate = m_sampleRate;
-
-    // Pulseaudio buffer length.
-    pa_buffer_attr bufferAtribute;
-    bufferAtribute.maxlength = m_inputBufferSize;
-    bufferAtribute.tlength = -1;
-    bufferAtribute.prebuf = -1;
-    bufferAtribute.minreq = -1;
-    bufferAtribute.fragsize = -1;
-
-    // Opening the input stream. (from the microphone.)
-    m_inputStream = pa_simple_new(
-        nullptr,
-        "MicrophoneLoopback",
-        PA_STREAM_RECORD,
-        nullptr,
-        "Microphone record",
-        &sampleSpec,
-        nullptr,
-        &bufferAtribute,
-        nullptr
-    );
-
-    if (!m_inputStream)
-    {
-        m_strError = "Failed to start the input stream.";
-        m_isStreamReady = false;
-        m_isPlayingContinue = false;
-        return false;
+#ifdef __linux__
     }
-
-    // Opening the output stream. (to the speakers.)
-    m_outputStream = pa_simple_new(
-        nullptr,
-        "MicrophoneLoopback",
-        PA_STREAM_PLAYBACK,
-        nullptr,
-        "Microphone playback",
-        &sampleSpec,
-        nullptr,
-        &bufferAtribute,
-        nullptr
-    );
-
-    if (!m_outputStream)
+    else
     {
-        m_strError = "Failed to start the output stream.";
-        m_isStreamReady = false;
-        m_isPlayingContinue = false;
-        return false;
-    }
+        // Stream specification.
+        pa_sample_spec sampleSpec;
+        sampleSpec.channels = m_channelsCount;
+        sampleSpec.format = PA_SAMPLE_S16LE;
+        sampleSpec.rate = m_sampleRate;
 
-    // Creating the two temporaring buffers.
-    m_data = new char[m_inputBufferSize];
-    memset(m_data, 0, m_inputBufferSize);
+        // Pulseaudio buffer length.
+        pa_buffer_attr bufferAtribute;
+        bufferAtribute.maxlength = m_inputBufferSize;
+        bufferAtribute.tlength = -1;
+        bufferAtribute.prebuf = -1;
+        bufferAtribute.minreq = -1;
+        bufferAtribute.fragsize = -1;
+
+        // Opening the input stream. (from the microphone.)
+        m_inputStream = pa_simple_new(
+            nullptr,
+            "MicrophoneLoopback",
+            PA_STREAM_RECORD,
+            nullptr,
+            "Microphone record",
+            &sampleSpec,
+            nullptr,
+            &bufferAtribute,
+            nullptr
+        );
+
+        if (!m_inputStream)
+        {
+            m_strError = "Failed to start the input stream.";
+            m_isStreamReady = false;
+            m_isPlayingContinue = false;
+            return false;
+        }
+
+        // Opening the output stream. (to the speakers.)
+        m_outputStream = pa_simple_new(
+            nullptr,
+            "MicrophoneLoopback",
+            PA_STREAM_PLAYBACK,
+            nullptr,
+            "Microphone playback",
+            &sampleSpec,
+            nullptr,
+            &bufferAtribute,
+            nullptr
+        );
+
+        if (!m_outputStream)
+        {
+            m_strError = "Failed to start the output stream.";
+            m_isStreamReady = false;
+            m_isPlayingContinue = false;
+            return false;
+        }
+
+        // Creating the two temporaring buffers.
+        m_data = new char[m_inputBufferSize];
+        memset(m_data, 0, m_inputBufferSize);
+    }
 #endif
 
     // Everything is fine.
@@ -189,7 +206,6 @@ bool LoopbackStream::init()
     return true;
 }
 
-#ifdef WIN32
 int LoopbackStream::staticInputCallback(
     const void *inputBuffer,
     void *outputBuffer,
@@ -209,7 +225,7 @@ int LoopbackStream::inputCallback(const void* inputBuffer, void* outputBuffer)
     return paContinue;
 }
 
-#elif __linux__
+#ifdef __linux__
 void LoopbackStream::streamLoop()
 {
     // Starting to play
@@ -240,7 +256,11 @@ bool LoopbackStream::play()
     // Playing the stream
     if (m_isStreamReady)
     {
-#ifdef WIN32
+#ifdef __linux__
+        if (m_usePortAudio)
+        {
+#endif
+
         int err = Pa_StartStream(m_stream);
         if (err != paNoError)
         {
@@ -248,13 +268,17 @@ bool LoopbackStream::play()
             m_isPlayingContinue = false;
             return false;
         }
-#endif
 
         m_isPlayingContinue = true;
 
 #ifdef __linux__
-        // Launch the loop of the stream into another thread.
-        m_tStream = std::thread(&LoopbackStream::streamLoop, this);
+        } 
+        else 
+        {
+            // Launch the loop of the stream into another thread.
+            m_tStream = std::thread(&LoopbackStream::streamLoop, this);
+            m_isPlayingContinue = true;
+        }
 #endif
 
         return true;
@@ -269,15 +293,9 @@ bool LoopbackStream::play()
 void LoopbackStream::stop()
 {
     // Stopping the stream.
-#ifdef WIN32
     if (m_stream)
-    {
         Pa_StopStream(m_stream);
-        m_isPlayingContinue = false;
-    }
-#elif __linux
     m_isPlayingContinue = false;
-#endif
 }
 
 bool LoopbackStream::isStreamReady() const
@@ -317,5 +335,10 @@ void LoopbackStream::setOutputLatency(double outputLatency)
 {
     if (outputLatency > 0.0)
         m_outputLatency = outputLatency;
+}
+#elif __linux__
+void LoopbackStream::usePortAudio(bool value)
+{
+    m_usePortAudio = value;
 }
 #endif

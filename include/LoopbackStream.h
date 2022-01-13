@@ -19,9 +19,8 @@
 #ifndef LOOPBACKSTREAM_MLB_H
 #define LOOPBACKSTREAM_MLB_H
 
-#ifdef WIN32
 #include <portaudio.h>
-#elif __linux__
+#ifdef __linux__
 #include <pulse/simple.h>
 #include <thread>
 #endif
@@ -53,10 +52,11 @@ public:
 #ifdef WIN32
     void setInputLatency(double inputLatency);
     void setOutputLatency(double outputLatency);
+#elif __linux__
+    void usePortAudio(bool value);
 #endif
 
 private:
-#ifdef WIN32
     // Static callbacks used has interface to C callbacks
     static int staticInputCallback(
         const void *inputBuffer,
@@ -73,7 +73,7 @@ private:
         void* outputBuffer
     );
 
-#elif __linux__
+#ifdef __linux__
     void streamLoop();
     void readingStream(int* index);
 #endif
@@ -91,9 +91,9 @@ private:
 
     // Stream.
     bool m_isStreamReady;
-#ifdef WIN32
     PaStream *m_stream;
-#elif __linux__
+#ifdef __linux__
+    bool m_usePortAudio;
     pa_simple* m_inputStream;
     pa_simple* m_outputStream;
     std::thread m_tStream;

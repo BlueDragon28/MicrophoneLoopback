@@ -38,6 +38,8 @@ public:
     double inputLatency() const;
     bool isOutputLatencySet() const;
     double outputLatency() const;
+#elif __linux__
+    bool usePortAudio() const;
 #endif
 
 private:
@@ -51,6 +53,8 @@ private:
     double m_inputLatency;
     bool m_isOutputLatencySet;
     double m_outputLatency;
+#elif __linux__
+    bool m_usePortAudio;
 #endif
 };
 

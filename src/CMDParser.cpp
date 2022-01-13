@@ -22,12 +22,14 @@ CMDParser::CMDParser(int& argc, char**& argv) :
     m_isSampleRateSet(false),
     m_sampleRate(0),
     m_isframesPerBufferSet(false),
-    m_framesPerBuffer(0)
+    m_framesPerBuffer(0),
 #ifdef WIN32
-    ,m_isInputLatencySet(false),
+    m_isInputLatencySet(false),
     m_inputLatency(-1.0),
     m_isOutputLatencySet(false),
     m_outputLatency(-1.0)
+#elif __linux__
+    m_usePortAudio(false)
 #endif
 {
     // Parsing command line arguments.
@@ -46,6 +48,8 @@ CMDParser::CMDParser(int& argc, char**& argv) :
 #ifdef WIN32
         ("i,input_latency", "Latency in seconds at which Windows will try to operate to get audio from the microphone (default: 0.02).", cxxopts::value<double>())
         ("o,output_latency", "Latency in seconds at which Windows will try to operate to send audio to the dac (default: 0.02).", cxxopts::value<double>())
+#elif __linux__
+        ("p,portaudio", "Use PortAudio API instead of the Pulse Simple API.", cxxopts::value<bool>()->default_value("false"))
 #endif
         ("v,version", "Show the version of the program.")
         ("h,help", "Print usage information.");
@@ -140,6 +144,9 @@ CMDParser::CMDParser(int& argc, char**& argv) :
         }
         m_isOutputLatencySet = true;
     }
+#elif __linux__
+    // Use PortAudio
+    m_usePortAudio = result["portaudio"].as<bool>();
 #endif
 }
 
@@ -185,5 +192,11 @@ bool CMDParser::isOutputLatencySet() const
 double CMDParser::outputLatency() const
 {
     return m_outputLatency;
+}
+
+#elif __linux__
+bool CMDParser::usePortAudio() const
+{
+    return m_usePortAudio;
 }
 #endif

@@ -64,6 +64,8 @@ private:
 #ifdef WIN32
     double m_inputLatency;
     double m_outputLatency;
+#elif __linux__
+    bool m_usePortAudio;
 #endif
 };
 

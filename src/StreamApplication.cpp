@@ -18,9 +18,7 @@
 
 #include "StreamApplication.h"
 #include "CMDParser.h"
-#ifdef WIN32
 #include <portaudio.h>
-#endif
 #include <thread>
 #include <chrono>
 #ifdef __linux__
@@ -35,10 +33,12 @@ StreamApplication::StreamApplication(int& argc, char**& argv) :
     m_isAppContinue(false),
     m_isAppReady(false),
     m_sampleRate(-1),
-    m_framesPerBuffer(-1)
+    m_framesPerBuffer(-1),
 #ifdef WIN32
-    ,m_inputLatency(-1.0),
+    m_inputLatency(-1.0),
     m_outputLatency(-1.0)
+#elif __linux
+    m_usePortAudio(false)
 #endif
 {
     // Set the app static member to this instance.
@@ -55,15 +55,22 @@ StreamApplication::StreamApplication(int& argc, char**& argv) :
         m_inputLatency = cmdParse.inputLatency();
     if (cmdParse.isOutputLatencySet())
         m_outputLatency = cmdParse.outputLatency();
+#elif __linux__
+    m_usePortAudio = cmdParse.usePortAudio();
 #endif
 
     // Initialize PortAudio.
-#ifdef WIN32
+#ifdef __linux__
+    if (m_usePortAudio)
+    {
+#endif
     int err = Pa_Initialize();
     if (err == paNoError)
         m_isAppReady = true;
     else
         m_isAppReady = false;
+#ifdef __linux__
+    }
 #endif
 
     m_isAppReady = true;
@@ -93,6 +100,8 @@ void StreamApplication::setStream(LoopbackStream* stream)
         m_stream->setInputLatency(m_inputLatency);
     if (m_outputLatency > -1.0)
         m_stream->setOutputLatency(m_outputLatency);
+#elif __linux__
+    m_stream->usePortAudio(m_usePortAudio);
 #endif
     m_stream->init();
 }
@@ -145,9 +154,10 @@ void StreamApplication::stopApplication()
 void StreamApplication::deinit()
 {
     m_stream->deinit();
-#ifdef WIN32
-    Pa_Terminate();
+#ifdef __linux__
+    if (m_usePortAudio)
 #endif
+    Pa_Terminate();
 }
 
 #ifdef WIN32
