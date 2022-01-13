@@ -41,6 +41,10 @@ To compile **MicrophoneLoopback** you need to have pulseaudio installed on your 
 - **-i, --input_latency arg** : Set the input latency in seconds at which Windows will get the audio from the microphone. The default value is **0.02**.
 - **-o, --output_latency arg** : Set the output latency in seconds at which Windows will send the audio to the speakers. The default value is **0.02**.
 
+## Linux specific
+
+- **-p, --portaudio** : Use PortAudio API instead of the Pulse Simple API.
+
 # Licence
 
 See the LICENCE file.
