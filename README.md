@@ -21,6 +21,26 @@ On **Linux**, **MicrophoneLooback** use the **pulse_simple api** to capture micr
 
 To compile **MicrophoneLoopback** you need to have pulseaudio installed on your system.
 
+# How to use
+
+**MicrophoneLoopback [OPTION...]**
+
+- **-r, --sample-rate arg** : Set the sample rate at which the program will loopback the sound of the microphone to the speakers. The default value is **48000**Hz.
+- **-f, --frames-per-buffer arg** : Set the number of frames per buffer, a lower value will decrease the latency, but will increase cpu overhead and glitches. The default value is **256**.
+- **-s, --short arg** : Allow to use short version for setting the sample rate :
+  - **44 -> 44100**
+  - **48 -> 48000**
+  - **96 -> 96000**
+
+  This settings is overridden by **--sample-rate**.
+- **-v, --version** : show the version of the program.
+- **-h, --help** : show a help text on the available options of the program.
+
+## Windows specific
+
+- **-i, --input_latency arg** : Set the input latency in seconds at which Windows will get the audio from the microphone. The default value is **0.02**.
+- **-o, --output_latency arg** : Set the output latency in seconds at which Windows will send the audio to the speakers. The default value is **0.02**.
+
 # Licence
 
 See the LICENCE file.
