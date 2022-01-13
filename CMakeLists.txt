@@ -70,7 +70,8 @@ if(WIN32)
 elseif(UNIX AND NOT APPLE)
     if (${PORTAUDIO_STATIC_BUILD})
         target_link_libraries(MicrophoneLoopback 
-            ${CMAKE_SOURCE_DIR}/dependencies/portaudio/lib/libportaudio.a 
+            ${CMAKE_SOURCE_DIR}/dependencies/portaudio/lib/libportaudio.a
+            ${PULSE_LIBRARIES}
             -ljack 
             -lasound 
             -lm 
