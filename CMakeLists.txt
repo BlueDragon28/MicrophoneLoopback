@@ -49,6 +49,9 @@ elseif(UNIX AND NOT APPLE)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(PULSE REQUIRED libpulse-simple)
     pkg_check_modules(PORTAUDIO REQUIRED portaudio-2.0)
+    pkg_check_modules(INI_PARSER REQUIRED ini_parser_static)
+    include_directories({INI_PARSER_INCLUDE_DIRS})
+    link_directories("${INI_PARSER_LIBRARY_DIRS}")
 endif()
 
 add_executable(MicrophoneLoopback
@@ -72,13 +75,14 @@ elseif(UNIX AND NOT APPLE)
         target_link_libraries(MicrophoneLoopback 
             ${CMAKE_SOURCE_DIR}/dependencies/portaudio/lib/libportaudio.a
             ${PULSE_LIBRARIES}
+            ${INI_PARSER_LIBRARIES}
             -ljack 
             -lasound 
             -lm 
             -lpthread)
         message("-- Compiling MicorphoneLoopback statically with user portaudio.")
     else()
-        target_link_libraries(MicrophoneLoopback ${PULSE_LIBRARIES} ${PORTAUDIO_LIBRARIES} -lpthread)
+        target_link_libraries(MicrophoneLoopback ${PULSE_LIBRARIES} ${PORTAUDIO_LIBRARIES} ${INI_PARSER_LIBRARIES} -lpthread)
     endif()
 endif()
 set_target_properties(MicrophoneLoopback PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
