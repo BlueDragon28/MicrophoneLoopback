@@ -17,6 +17,7 @@
 */
 
 #include "CMDParser.h"
+#include <ini_parser.h>
 
 CMDParser::CMDParser(int& argc, char**& argv) :
     m_isSampleRateSet(false),

@@ -57,7 +57,7 @@ elseif(UNIX AND NOT APPLE)
     pkg_check_modules(PULSE REQUIRED libpulse-simple)
     pkg_check_modules(PORTAUDIO REQUIRED portaudio-2.0)
     pkg_check_modules(INI_PARSER REQUIRED ini_parser_static)
-    include_directories({INI_PARSER_INCLUDE_DIRS})
+    include_directories(${INI_PARSER_INCLUDE_DIRS})
     link_directories("${INI_PARSER_LIBRARY_DIRS}")
 endif()
 
