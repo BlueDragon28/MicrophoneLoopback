@@ -19,6 +19,11 @@
 #include "CMDParser.h"
 #include <ini_parser.h>
 
+#ifdef __linux__
+#include <pwd.h>
+#include <unistd.h>
+#endif
+
 CMDParser::CMDParser(int& argc, char**& argv) :
     m_isSampleRateSet(false),
     m_sampleRate(0),
@@ -54,6 +59,27 @@ CMDParser::CMDParser(int& argc, char**& argv) :
 #endif
         ("v,version", "Show the version of the program.")
         ("h,help", "Print usage information.");
+    
+    // ini_parser object used to read ini file.
+    ini_parser ini;
+    bool isValid = false;
+    std::string fIniPath;
+#ifdef WIN32
+    fIniPath = "./MicrophoneLoopback.conf";
+    ini.setIniFile(fIniPath, true);
+#elif __linux__
+    const char* homeDir = getenv("HOME");
+    if (homeDir == nullptr)
+        homeDir = getpwuid(getuid())->pw_dir;
+    fIniPath = homeDir;
+    fIniPath += "/.config/MicrophoneLoopback/MicrophoneLoopback.conf";
+    ini.setIniFile(fIniPath, true);
+    if (!ini.isParsed())
+    {
+        fIniPath = "/etc/MicrophoneLoopback/MicrophoneLoopback.conf";
+        ini.setIniFile(fIniPath, true);
+    }
+#endif
     
     // Parsing.
     cxxopts::ParseResult result = options.parse(argc, argv);
@@ -108,6 +134,29 @@ CMDParser::CMDParser(int& argc, char**& argv) :
         }
         m_isSampleRateSet = true;
     }
+    else if (ini.isParsed())
+    {
+        std::string sSampleRate = ini.getValue("stream", "sample-rate", &isValid);
+        if (isValid)
+        {
+            try
+            {
+                int sampleRate = std::stoi(sSampleRate);
+                if (sampleRate < 16000)
+                {
+                    std::cout << "Ini error: sample rate cannot be below 16000." << std::endl;
+                    std::exit(EXIT_FAILURE);
+                }
+                m_sampleRate = sampleRate;
+                m_isSampleRateSet = true;
+            }
+            catch (...)
+            {
+                std::cout << "Ini error: sample rate must be a integer." << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
+        }
+    }
 
     // Frames per buffer.
     if (result.count("frames-per-buffer"))
@@ -119,6 +168,29 @@ CMDParser::CMDParser(int& argc, char**& argv) :
             std::exit(EXIT_FAILURE);
         }
         m_isframesPerBufferSet = true;
+    }
+    else if (ini.isParsed())
+    {
+        std::string sFramesPerBufer = ini.getValue("stream", "frames-per-buffer", &isValid);
+        if (isValid)
+        {
+            try
+            {
+                int framesPerBuffer = std::stoi(sFramesPerBufer);
+                if (framesPerBuffer <= 0)
+                {
+                    std::cout << "Ini error: frames per buffer must be higher than 0." << std::endl;
+                    std::exit(EXIT_FAILURE);
+                }
+                m_framesPerBuffer = framesPerBuffer;
+                m_isframesPerBufferSet = true;
+            }
+            catch (...)
+            {
+                std::cout << "Ini error: frames per buffer must be an integer." << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
+        }
     }
 
 #ifdef WIN32
@@ -133,6 +205,29 @@ CMDParser::CMDParser(int& argc, char**& argv) :
         }
         m_isInputLatencySet = true;
     }
+    else if (ini.isParsed())
+    {
+        std::string sInputLatency = ini.getValue("Windows", "input_latency", &isValid);
+        if (isValid)
+        {
+            try
+            {
+                double inputLatency = std::stod(sInputLatency);
+                if (inputLatency <= 0.0)
+                {
+                    std::cout << "Ini error: input latency must be highter than 0." << std::endl;
+                    std::exit(EXIT_FAILURE);
+                }
+                m_inputLatency = inputLatency;
+                m_isInputLatencySet = true;
+            }
+            catch (...)
+            {
+                std::cout << "Ini error: input latency must be a valid floating point number." << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
+        }
+    }
     
     // Output latency
     if (result.count("output_latency"))
@@ -145,9 +240,44 @@ CMDParser::CMDParser(int& argc, char**& argv) :
         }
         m_isOutputLatencySet = true;
     }
+    else if (ini.isParsed())
+    {
+        std::string sOutputLatency = ini.getValue("Windows", "output_latency", &isValid);
+        if (isValid)
+        {
+            try
+            {
+                double outputLatency = std::stod(sOutputLatency);
+                if (outputLatency <= 0.0)
+                {
+                    std::cout << "ini error: output latency must be highter than 0." << std::endl;
+                    std::exit(EXIT_FAILURE);
+                }
+                m_outputLatency = outputLatency;
+                m_isOutputLatencySet = true;
+            }
+            catch (...)
+            {
+                std::cout << "Ini error: output latency must be a valid floating point number." << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
+        }
+    }
 #elif __linux__
     // Use PortAudio
     m_usePortAudio = result["portaudio"].as<bool>();
+    if (!m_usePortAudio && ini.isParsed())
+    {
+        std::string sUsePortAudio = ini.getValue("api", "use-portaudio", &isValid);
+        if (isValid)
+        {
+            if (sUsePortAudio == "yes" ||
+                sUsePortAudio == "on" ||
+                sUsePortAudio == "true" ||
+                sUsePortAudio == "1")
+                m_usePortAudio = true;
+        }
+    }
 #endif
 }
 
