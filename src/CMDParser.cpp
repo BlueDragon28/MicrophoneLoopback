@@ -67,6 +67,8 @@ CMDParser::CMDParser(int& argc, char**& argv) :
 #ifdef WIN32
     fIniPath = "./MicrophoneLoopback.conf";
     ini.setIniFile(fIniPath, true);
+	if (ini.isParsed())
+		std::cout << fIniPath << std::endl;
 #elif __linux__
     const char* homeDir = getenv("HOME");
     if (homeDir == nullptr)
