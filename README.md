@@ -6,20 +6,23 @@
 
 ## Windows
 
-**MicrophoneLoopback** use the [PortAudio API](http://www.portaudio.com/) to capture the microphone stream and send it back to the speakers.  
+**MicrophoneLoopback** use the [PortAudio API](http://www.portaudio.com/) to capture the microphone stream and send it back to the speakers. [cxxopts](https://github.com/jarro2783/cxxopts) to parse command line arguments and [ini_parser](https://github.com/BlueDragon28/ini_parser) to parse **ini** file.
+
 To compile MicrophoneLoopback, you first need to compile PortAudio, follow this [PortAudio installation guide](http://files.portaudio.com/docs/v19-doxydocs/tutorial_start.html).
 
 The **PortAudio binary** files must be in the **dependencies/portaudio** folders with :
 - **lib**: put in this folder the file **portaudio_static_x64.lib** file.
 - **include**: put the **PortAudio** include file.
 
+Clone the **cxxopts** library and the **ini_parser** library into the **dependencies** folder.
+
 Then, compile the **MicrophoneLoopback** with [CMake](https://cmake.org/).
 
 ## Linux
 
-On **Linux**, **MicrophoneLooback** use the **pulse_simple api** to capture microphone stream and send it back to the speakers.
+On **Linux**, **MicrophoneLooback** use the **pulse_simple api** or the [PortAudio](https://github.com/PortAudio/portaudio) to capture microphone stream and send it back to the speakers, [cxxopts](https://github.com/jarro2783/cxxopts) for parsing command line arguments and [ini_parser](https://github.com/BlueDragon28/ini_parser) for parsing **ini** file.
 
-To compile **MicrophoneLoopback** you need to have pulseaudio installed on your system.
+To compile **MicrophoneLoopback** you need to have **pulseaudio**, [PortAudio](https://github.com/PortAudio/portaudio), [cxxopts](https://github.com/jarro2783/cxxopts) and [ini_parser](https://github.com/BlueDragon28/ini_parser) installed on your system.
 
 # How to use
 
