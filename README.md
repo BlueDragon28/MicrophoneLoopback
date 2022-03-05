@@ -45,6 +45,29 @@ To compile **MicrophoneLoopback** you need to have pulseaudio installed on your 
 
 - **-p, --portaudio** : Use PortAudio API instead of the Pulse Simple API.
 
+## Configuration
+
+It is possible to configure MicrophoneLoopback with a **.conf** file. An exemple template [here](https://github.com/BlueDragon28/MicrophoneLoopback/blob/development/MicrophoneLoopback.conf). The file use an **ini** syntax.
+
+Ini file :
+
+``` ini
+# Configuration file to configure MicrophoneLoopback.
+
+[stream]
+#sample-rate=48000
+#frames-per-buffer=256
+
+[Windows]
+#input_latency=0.02
+#output_latency=0.02
+
+[api]
+#use-portaudio=yes
+```
+
+On Windows the file must be put in the same location of the executable. On Linux, the file may be put wether on `/home/user/.config/MicrophoneLoopback/` or in `/etc/MicrophoneLoopback`.
+
 # Licence
 
 See the LICENCE file.
