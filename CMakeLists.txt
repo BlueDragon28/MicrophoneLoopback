@@ -45,6 +45,13 @@ if (WIN32)
         message(FATAL_ERROR "Failed to find cxxopts include file.")
     endif()
     include_directories("${CMAKE_SOURCE_DIR}/dependencies/cxxopts/include")
+
+    if ((NOT EXISTS "${CMAKE_SOURCE_DIR}/dependencies/ini_parser/include/ini_parser/ini_parser.h") OR
+        (NOT EXISTS "${CMAKE_SOURCE_DIR}/dependencies/ini_parser/include/lib/ini_parser_static.lib"))
+        message(FATAL_ERROR "Failed to find the ini_parser library files")
+    endif()
+    include_directories("${CMAKE_SOURCE_DIR}/dependencies/ini_parser/include/ini_parser/")
+    link_directories("${CMAKE_SOURCE_DIR}/dependencies/ini_parser/include/lib")
 elseif(UNIX AND NOT APPLE)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(PULSE REQUIRED libpulse-simple)
@@ -64,9 +71,11 @@ add_executable(MicrophoneLoopback
     "src/CMDParser.cpp")
 if(WIN32)
     if (CMAKE_CL_64)
-        target_link_libraries(MicrophoneLoopback "${CMAKE_SOURCE_DIR}/dependencies/portaudio/lib/portaudio_static_x64.lib")
+        target_link_libraries(MicrophoneLoopback "${CMAKE_SOURCE_DIR}/dependencies/portaudio/lib/portaudio_static_x64.lib"
+            "${CMAKE_SOURCE_DIR}/dependencies/ini_parser/include/lib/ini_parser_static.lib")
     else()
-        target_link_libraries(MicrophoneLoopback "${CMAKE_SOURCE_DIR}/dependencies/portaudio/lib/portaudio_static.lib")
+        target_link_libraries(MicrophoneLoopback "${CMAKE_SOURCE_DIR}/dependencies/portaudio/lib/portaudio_static.lib"
+            "${CMAKE_SOURCE_DIR}/dependencies/ini_parser/include/lib/ini_parser_static.lib")
     endif()
     set_property(TARGET MicrophoneLoopback PROPERTY
              MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
