@@ -17,7 +17,10 @@
 */
 
 #include "CMDParser.h"
+#include "Common.h"
+#include <cstdlib>
 #include <ini_parser.h>
+#include <cmath>
 
 #ifdef __linux__
 #include <pwd.h>
@@ -33,10 +36,12 @@ CMDParser::CMDParser(int& argc, char**& argv) :
     m_isInputLatencySet(false),
     m_inputLatency(-1.0),
     m_isOutputLatencySet(false),
-    m_outputLatency(-1.0)
+    m_outputLatency(-1.0),
 #elif __linux__
-    m_usePortAudio(false)
+    m_usePortAudio(false),
 #endif
+    m_isBackendSet(false),
+    m_backend(BackendAudio::SYSTEM_DEFAULT)
 {
     // Parsing command line arguments.
     if (argc <= 0 || argv == nullptr)
@@ -56,6 +61,7 @@ CMDParser::CMDParser(int& argc, char**& argv) :
         ("o,output_latency", "Latency in seconds at which Windows will try to operate to send audio to the dac (default: 0.02).", cxxopts::value<double>())
 #elif __linux__
         ("p,portaudio", "Use PortAudio API instead of the Pulse Simple API.", cxxopts::value<bool>()->default_value("false"))
+         ("b,backend-audio", "The id of the backend audio to use. Only for PortAudio!!!", cxxopts::value<int>())
 #endif
         ("v,version", "Show the version of the program.")
         ("h,help", "Print usage information.");
@@ -281,6 +287,34 @@ CMDParser::CMDParser(int& argc, char**& argv) :
         }
     }
 #endif
+
+    if (result.count("backend-audio"))
+    {
+        const BackendAudio backend = (BackendAudio)result["backend-audio"].as<int>();
+        m_isBackendSet = true;
+        m_backend = backend;
+    } else if (ini.isParsed())
+    {
+        std::string sBackend = ini.getValue("stream", "backend-audio", &isValid);
+
+        if (isValid)
+        {
+            try 
+            {
+                BackendAudio backend = 
+                    (BackendAudio)std::min(1, 
+                        std::max(std::stoi(sBackend), (int)BackendAudio::JACK));
+
+                m_backend = backend;
+                m_isBackendSet = true;
+            } 
+            catch (...)
+            {
+                std::cout << "Ini error: invalid backend number" << std::endl;
+                std::exit(EXIT_FAILURE);
+            }
+        }
+    }
 }
 
 CMDParser::~CMDParser()
@@ -333,3 +367,13 @@ bool CMDParser::usePortAudio() const
     return m_usePortAudio;
 }
 #endif
+
+bool CMDParser::isBackendSet() const
+{
+    return m_isBackendSet;
+}
+
+BackendAudio CMDParser::backend() const
+{
+    return m_backend;
+}

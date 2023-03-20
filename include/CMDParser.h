@@ -19,6 +19,7 @@
 #ifndef STREAMAPPLICATION_CMDParser
 #define STREAMAPPLICATION_CMDParser
 
+#include "Common.h"
 #include <string>
 #include <cxxopts.hpp>
 
@@ -42,6 +43,9 @@ public:
     bool usePortAudio() const;
 #endif
 
+    bool isBackendSet() const;
+    BackendAudio backend() const;
+
 private:
     bool m_isSampleRateSet;
     int m_sampleRate;
@@ -56,6 +60,9 @@ private:
 #elif __linux__
     bool m_usePortAudio;
 #endif
+
+    bool m_isBackendSet;
+    BackendAudio m_backend;
 };
 
 #endif // STREAMAPPLICATION_CMDParser

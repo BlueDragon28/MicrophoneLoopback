@@ -19,6 +19,7 @@
 #ifndef LOOPBACKSTREAM_MLB_H
 #define LOOPBACKSTREAM_MLB_H
 
+#include "Common.h"
 #include <portaudio.h>
 #ifdef __linux__
 #include <pulse/simple.h>
@@ -56,6 +57,8 @@ public:
     void usePortAudio(bool value);
 #endif
 
+    void setBackend(BackendAudio backend);
+
 private:
     // Static callbacks used has interface to C callbacks
     static int staticInputCallback(
@@ -88,6 +91,7 @@ private:
     double m_inputLatency;
     double m_outputLatency;
 #endif
+    BackendAudio m_backend;
 
     // Stream.
     bool m_isStreamReady;

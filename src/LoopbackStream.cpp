@@ -342,3 +342,8 @@ void LoopbackStream::usePortAudio(bool value)
     m_usePortAudio = value;
 }
 #endif
+
+void LoopbackStream::setBackend(BackendAudio backend)
+{
+    m_backend = backend;
+}

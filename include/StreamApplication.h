@@ -19,6 +19,7 @@
 #ifndef STREAMAPPLICATION_MLB_H
 #define STREAMAPPLICATION_MLB_H
 
+#include "Common.h"
 #include "LoopbackStream.h"
 
 #ifdef WIN32
@@ -67,6 +68,7 @@ private:
 #elif __linux__
     bool m_usePortAudio;
 #endif
+    BackendAudio m_backend;
 };
 
 #endif // STREAMAPPLICATION_MLB_H

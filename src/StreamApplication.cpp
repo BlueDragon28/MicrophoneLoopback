@@ -18,6 +18,7 @@
 
 #include "StreamApplication.h"
 #include "CMDParser.h"
+#include "Common.h"
 #include <portaudio.h>
 #include <thread>
 #include <chrono>
@@ -36,10 +37,11 @@ StreamApplication::StreamApplication(int& argc, char**& argv) :
     m_framesPerBuffer(-1),
 #ifdef WIN32
     m_inputLatency(-1.0),
-    m_outputLatency(-1.0)
+    m_outputLatency(-1.0),
 #elif __linux
-    m_usePortAudio(false)
+    m_usePortAudio(false),
 #endif
+    m_backend(BackendAudio::SYSTEM_DEFAULT)
 {
     // Set the app static member to this instance.
     app = this;
@@ -58,6 +60,9 @@ StreamApplication::StreamApplication(int& argc, char**& argv) :
 #elif __linux__
     m_usePortAudio = cmdParse.usePortAudio();
 #endif
+
+    if (cmdParse.isBackendSet())
+        m_backend = cmdParse.backend();
 
     // Initialize PortAudio.
 #ifdef __linux__
@@ -103,6 +108,7 @@ void StreamApplication::setStream(LoopbackStream* stream)
 #elif __linux__
     m_stream->usePortAudio(m_usePortAudio);
 #endif
+    m_stream->setBackend(m_backend);
     m_stream->init();
 }
 
