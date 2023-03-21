@@ -69,6 +69,8 @@ if (WIN32)
         "src/LoopbackStream.cpp"
         "src/StreamApplication.cpp"
         "src/CMDParser.cpp"
+        "include/Common.h"
+        "src/Common.cpp"
         "${CMAKE_SOURCE_DIR}/dependencies/ini_parser/src/ini_parser.cpp")
 else()
 add_executable(MicrophoneLoopback
@@ -78,7 +80,9 @@ add_executable(MicrophoneLoopback
         "include/CMDParser.h"
         "src/LoopbackStream.cpp"
         "src/StreamApplication.cpp"
-        "src/CMDParser.cpp")
+        "src/CMDParser.cpp"
+        "include/Common.h"
+        "src/Common.cpp")
 endif()
 if(WIN32)
     if (CMAKE_CL_64)

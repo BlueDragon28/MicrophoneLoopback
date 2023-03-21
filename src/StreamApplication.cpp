@@ -105,10 +105,15 @@ void StreamApplication::setStream(LoopbackStream* stream)
         m_stream->setInputLatency(m_inputLatency);
     if (m_outputLatency > -1.0)
         m_stream->setOutputLatency(m_outputLatency);
+
+    m_stream->setBackend(m_backend);
 #elif __linux__
     m_stream->usePortAudio(m_usePortAudio);
+    if (m_usePortAudio)
+    {
+        m_stream->setBackend(m_backend);
+    }
 #endif
-    m_stream->setBackend(m_backend);
     m_stream->init();
 }
 
