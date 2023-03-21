@@ -17,6 +17,7 @@
 */
 
 #include "LoopbackStream.h"
+#include "Common.h"
 #include <cstring>
 
 LoopbackStream::LoopbackStream() :
@@ -36,10 +37,11 @@ LoopbackStream::LoopbackStream() :
 #endif
     m_isStreamReady(false),
     m_isPlayingContinue(false),
-    m_inputBufferSize(m_streamFramePerBuffer * m_sizePerSample * m_channelsCount)
+    m_inputBufferSize(m_streamFramePerBuffer * m_sizePerSample * m_channelsCount),
 #ifdef __linux__
-    ,m_data(nullptr)
+    m_data(nullptr),
 #endif
+    m_availableBackend(getAvailablesBackend())
 {}
 
 LoopbackStream::~LoopbackStream()
@@ -345,5 +347,18 @@ void LoopbackStream::usePortAudio(bool value)
 
 void LoopbackStream::setBackend(BackendAudio backend)
 {
-    m_backend = backend;
+    bool isValid = false;
+    for (BackendAudio availableBackend : m_availableBackend)
+    {
+        if (backend == availableBackend)
+        {
+            isValid = true;
+            break;
+        }
+    }
+
+    if (isValid && backend != BackendAudio::SYSTEM_DEFAULT)
+        m_backend = backend;
+    else 
+        m_backend = getDefaultBackend();
 }

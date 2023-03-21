@@ -1,6 +1,8 @@
 #ifndef STREAMAPPLICATION_Common
 #define STREAMAPPLICATION_Common
 
+#include <vector>
+
 enum class BackendAudio
 {
     INVALID_API = -1,
@@ -14,5 +16,8 @@ enum class BackendAudio
     ALSA,
     JACK
 };
+
+std::vector<BackendAudio> getAvailablesBackend();
+BackendAudio getDefaultBackend();
 
 #endif // STREAMAPPLICATION_Common

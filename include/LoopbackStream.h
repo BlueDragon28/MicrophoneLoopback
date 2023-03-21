@@ -113,6 +113,8 @@ private:
 #ifdef __linux__
     char* m_data;
 #endif
+
+    const std::vector<BackendAudio> m_availableBackend;
 };
 
 #endif // LOOPBACKSTREAM_MLB_H
