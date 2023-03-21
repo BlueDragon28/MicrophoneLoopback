@@ -20,6 +20,7 @@
 #include "Common.h"
 #include <cstring>
 #include <iostream>
+#include <portaudio.h>
 
 LoopbackStream::LoopbackStream() :
     m_channelsCount(1),
@@ -97,9 +98,30 @@ bool LoopbackStream::init()
 
     int err = paNoError;
 
+    const PaHostApiInfo* hostApiInfo = Pa_GetHostApiInfo(
+            Pa_HostApiTypeIdToHostApiIndex((PaHostApiTypeId)fromBackendToHostApiID(m_backend)));
+
+    if (!hostApiInfo)
+    {
+        std::cerr << "Cannot get host api info!" << std::endl;
+        std::exit(-1);
+    }
+
+    if (hostApiInfo->defaultInputDevice == paNoDevice)
+    {
+        std::cerr << "No default input device" << std::endl;
+        std::exit(-1);
+    }
+
+    if (hostApiInfo->defaultOutputDevice == paNoDevice)
+    {
+        std::cerr << "No default output device" << std::endl;
+        std::exit(-1);
+    }
+
     // Creating the input stream with the default input device.
     PaStreamParameters inputStreamParams = {};
-    inputStreamParams.device = Pa_GetDefaultInputDevice();
+    inputStreamParams.device = hostApiInfo->defaultInputDevice;
     inputStreamParams.channelCount = m_channelsCount;
     inputStreamParams.sampleFormat = paInt16;
 #ifdef WIN32
@@ -110,7 +132,7 @@ bool LoopbackStream::init()
     inputStreamParams.hostApiSpecificStreamInfo = nullptr;
 
     PaStreamParameters outputStreamParams = {};
-    outputStreamParams.device = Pa_GetDefaultOutputDevice();
+    outputStreamParams.device = hostApiInfo->defaultOutputDevice;
     outputStreamParams.channelCount = m_channelsCount;
     outputStreamParams.sampleFormat = paInt16;
 #ifdef WIN32

@@ -21,5 +21,6 @@ bool validateBackend(BackendAudio backend);
 std::vector<BackendAudio> getAvailablesBackend();
 BackendAudio getDefaultBackend();
 void displayAvailableBackend();
+int fromBackendToHostApiID(BackendAudio backend);
 
 #endif // STREAMAPPLICATION_Common

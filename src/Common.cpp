@@ -126,3 +126,28 @@ void displayAvailableBackend()
         std::exit(-1);
     }
 }
+
+int fromBackendToHostApiID(BackendAudio backend)
+{
+    switch (backend) 
+    {
+        case BackendAudio::DIRECT_SOUND:
+            return paDirectSound;
+        case BackendAudio::MME:
+            return paMME;
+        case BackendAudio::ASIO:
+            return paASIO;
+        case BackendAudio::WASAPI:
+            return paWASAPI;
+        case BackendAudio::WDMKS:
+            return paWDMKS;
+        case BackendAudio::OSS:
+            return paOSS;
+        case BackendAudio::ALSA:
+            return paALSA;
+        case BackendAudio::JACK:
+            return paJACK;
+        default:
+            return -1;
+    }
+}
