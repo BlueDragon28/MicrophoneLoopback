@@ -73,7 +73,8 @@ private:
     // Callbacks
     int inputCallback(
         const void *inputBuffer,
-        void* outputBuffer
+        void* outputBuffer,
+        unsigned long framesPerBuffer
     );
 
 #ifdef __linux__

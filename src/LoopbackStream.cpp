@@ -147,7 +147,7 @@ bool LoopbackStream::init()
         &inputStreamParams,
         &outputStreamParams,
         m_sampleRate,
-        m_streamFramePerBuffer,
+        paFramesPerBufferUnspecified,
         paClipOff,
         LoopbackStream::staticInputCallback,
         static_cast<void*>(this));
@@ -241,12 +241,12 @@ int LoopbackStream::staticInputCallback(
 {
     // redirectint this function to the member function of LoopbackStream.
     LoopbackStream* lStream = static_cast<LoopbackStream*>(userData);
-    return lStream->inputCallback(inputBuffer, outputBuffer);
+    return lStream->inputCallback(inputBuffer, outputBuffer, framesPerBuffer);
 }
 
-int LoopbackStream::inputCallback(const void* inputBuffer, void* outputBuffer)
+int LoopbackStream::inputCallback(const void* inputBuffer, void* outputBuffer, unsigned long framesPerBuffer)
 {
-    memcpy(outputBuffer, inputBuffer, m_inputBufferSize);
+    memcpy(outputBuffer, inputBuffer, framesPerBuffer * sizeof(int16_t));
     return paContinue;
 }
 
