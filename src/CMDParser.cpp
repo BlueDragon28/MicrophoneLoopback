@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <ini_parser.h>
 #include <cmath>
+#include <iostream>
 
 #ifdef __linux__
 #include <pwd.h>
