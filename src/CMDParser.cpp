@@ -61,7 +61,8 @@ CMDParser::CMDParser(int& argc, char**& argv) :
         ("o,output_latency", "Latency in seconds at which Windows will try to operate to send audio to the dac (default: 0.02).", cxxopts::value<double>())
 #elif __linux__
         ("p,portaudio", "Use PortAudio API instead of the Pulse Simple API.", cxxopts::value<bool>()->default_value("false"))
-         ("b,backend-audio", "The id of the backend audio to use. Only for PortAudio!!!", cxxopts::value<int>())
+        ("b,backend-audio", "The id of the backend audio to use. Only for PortAudio!!!", cxxopts::value<int>())
+        ("a,available-backends", "Display the available backend name along side their ID")
 #endif
         ("v,version", "Show the version of the program.")
         ("h,help", "Print usage information.");
@@ -325,6 +326,16 @@ CMDParser::CMDParser(int& argc, char**& argv) :
                 std::exit(EXIT_FAILURE);
             }
         }
+    }
+
+    if (result.count("available-backends")
+#ifdef __linux__
+        && m_usePortAudio
+#endif
+    )
+    {
+        displayAvailableBackend();
+        std::exit(-1);
     }
 }
 

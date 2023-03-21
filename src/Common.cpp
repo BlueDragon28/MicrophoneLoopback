@@ -1,5 +1,6 @@
 #include "Common.h"
 #include <portaudio.h>
+#include <iostream>
 
 bool validateBackend(BackendAudio backend)
 {
@@ -74,3 +75,54 @@ BackendAudio getDefaultBackend()
     return fromHostApiToBackend(Pa_GetHostApiInfo(Pa_GetDefaultHostApi())->type);
 }
 
+std::string fromBackendToString(BackendAudio backend)
+{
+    switch (backend)
+    {
+    case BackendAudio::SYSTEM_DEFAULT:
+        return "System Default";
+    case BackendAudio::DIRECT_SOUND:
+        return "DirectSound";
+    case BackendAudio::MME:
+        return "MME";
+    case BackendAudio::ASIO:
+        return "ASIO";
+    case BackendAudio::WASAPI:
+        return "WASAPI";
+    case BackendAudio::WDMKS:
+        return "WDMKS";
+    case BackendAudio::OSS:
+        return "OSS";
+    case BackendAudio::ALSA:
+        return "ALSA";
+    case BackendAudio::JACK:
+        return "JACK";
+    default:
+        return "Invalid API";
+    }
+}
+
+void displayAvailableBackend()
+{
+    if (Pa_Initialize() != paNoError)
+    {
+        std::cerr << "Failed to initialize PortAudio!" << std::endl;
+        std::exit(-1);
+    }
+
+    const std::vector<BackendAudio> availableBackend = getAvailablesBackend();
+
+    std::cout << "List of available backends for PortAudio" << '\n'
+        << "ID:NAME" << '\n';
+
+    for (const BackendAudio backend : availableBackend)
+    {
+        std::cout << (int)backend << ":" << fromBackendToString(backend) << "\n";
+    }
+
+    if (Pa_Terminate() != paNoError)
+    {
+        std::cerr << "Failed to deinit PortAudio!" << std::endl;
+        std::exit(-1);
+    }
+}

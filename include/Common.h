@@ -20,5 +20,6 @@ enum class BackendAudio
 bool validateBackend(BackendAudio backend);
 std::vector<BackendAudio> getAvailablesBackend();
 BackendAudio getDefaultBackend();
+void displayAvailableBackend();
 
 #endif // STREAMAPPLICATION_Common
