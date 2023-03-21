@@ -51,6 +51,11 @@ std::vector<BackendAudio> getAvailablesBackend()
 {
     PaHostApiIndex hostApiCount = Pa_GetHostApiCount();
 
+    if (hostApiCount <= 0)
+    {
+        return std::vector<BackendAudio>();
+    }
+
     std::vector<BackendAudio> availableBackend;
     availableBackend.push_back(BackendAudio::SYSTEM_DEFAULT);
 
