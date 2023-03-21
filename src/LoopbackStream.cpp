@@ -19,6 +19,7 @@
 #include "LoopbackStream.h"
 #include "Common.h"
 #include <cstring>
+#include <iostream>
 
 LoopbackStream::LoopbackStream() :
     m_channelsCount(1),
@@ -359,6 +360,11 @@ void LoopbackStream::setBackend(BackendAudio backend)
 
     if (isValid && backend != BackendAudio::SYSTEM_DEFAULT)
         m_backend = backend;
-    else 
+    else if (backend == BackendAudio::SYSTEM_DEFAULT)
         m_backend = getDefaultBackend();
+    else 
+    {
+        std::cerr << "Invalid Backend!" << std::endl;
+        std::exit(-1);
+    }
 }
