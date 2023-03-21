@@ -290,7 +290,8 @@ CMDParser::CMDParser(int& argc, char**& argv) :
 
     if (result.count("backend-audio"))
     {
-        const BackendAudio backend = (BackendAudio)result["backend-audio"].as<int>();
+        const BackendAudio backend = 
+            (BackendAudio)std::max(0, std::min(result["backend-audio"].as<int>(), (int)BackendAudio::JACK));
         m_isBackendSet = true;
         m_backend = backend;
     } else if (ini.isParsed())
@@ -302,8 +303,8 @@ CMDParser::CMDParser(int& argc, char**& argv) :
             try 
             {
                 BackendAudio backend = 
-                    (BackendAudio)std::min(1, 
-                        std::max(std::stoi(sBackend), (int)BackendAudio::JACK));
+                    (BackendAudio)std::max(0, 
+                        std::min(std::stoi(sBackend), (int)BackendAudio::JACK));
 
                 m_backend = backend;
                 m_isBackendSet = true;
