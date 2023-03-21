@@ -1,6 +1,27 @@
 #include "Common.h"
 #include <portaudio.h>
 
+bool validateBackend(BackendAudio backend)
+{
+    if (
+        backend == BackendAudio::SYSTEM_DEFAULT ||
+        backend == BackendAudio::DIRECT_SOUND ||
+        backend == BackendAudio::MME ||
+        backend == BackendAudio::ASIO ||
+        backend == BackendAudio::WASAPI ||
+        backend == BackendAudio::WDMKS ||
+        backend == BackendAudio::OSS ||
+        backend == BackendAudio::ALSA ||
+        backend == BackendAudio::JACK)
+    {
+        return true;
+    }
+    else 
+    {
+        return false;
+    }
+}
+
 BackendAudio fromHostApiToBackend(PaHostApiTypeId id)
 {
     switch (id)
@@ -47,3 +68,4 @@ BackendAudio getDefaultBackend()
 {
     return fromHostApiToBackend(Pa_GetHostApiInfo(Pa_GetDefaultHostApi())->type);
 }
+

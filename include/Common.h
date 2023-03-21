@@ -17,6 +17,7 @@ enum class BackendAudio
     JACK
 };
 
+bool validateBackend(BackendAudio backend);
 std::vector<BackendAudio> getAvailablesBackend();
 BackendAudio getDefaultBackend();
 
